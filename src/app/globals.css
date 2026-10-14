@@ -1,0 +1,59 @@
+:root {
+  --bg: #f6f7f9; --card: #fff; --text: #1a2230; --muted: #6b7686; --border: #e2e6ec;
+  --primary: #1f9d6b; --primary-dark: #167a53; --danger: #c93c3c; --warn: #b7791f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+a { color: var(--primary-dark); text-decoration: none; }
+a:hover { text-decoration: underline; }
+header.nav { background: #fff; border-bottom: 1px solid var(--border); }
+header.nav .inner { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 24px; height: 56px; }
+header.nav .brand { font-weight: 700; color: var(--text); }
+header.nav nav { display: flex; gap: 18px; flex: 1; }
+main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+h2 { font-size: 1.1rem; margin: 28px 0 12px; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.stat .n { font-size: 2rem; font-weight: 700; }
+.stat .l { color: var(--muted); font-size: .9rem; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: .92rem; vertical-align: top; }
+th { background: #fafbfc; color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+tr:last-child td { border-bottom: none; }
+.table-wrap { overflow-x: auto; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.badge.green { background: #e1f5ec; color: #11704b; }
+.badge.gray { background: #eceff3; color: #5a6574; }
+.badge.red { background: #fbe4e4; color: #a02a2a; }
+.badge.amber { background: #fdf0d9; color: #8a5a10; }
+.btn { display: inline-block; border: 1px solid var(--border); background: #fff; color: var(--text); padding: 7px 14px; border-radius: 8px; font-size: .9rem; cursor: pointer; font-family: inherit; }
+.btn:hover { background: #f1f3f6; text-decoration: none; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.primary:hover { background: var(--primary-dark); }
+.btn.danger { color: var(--danger); border-color: #efc4c4; }
+.btn.small { padding: 4px 10px; font-size: .82rem; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+form.stack { display: grid; gap: 14px; max-width: 620px; }
+label { display: grid; gap: 4px; font-size: .88rem; font-weight: 600; }
+label .hint { font-weight: 400; color: var(--muted); }
+input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: 2px solid #b9e6d2; border-color: var(--primary); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 600px) { .row2, .row3 { grid-template-columns: 1fr; } }
+.alert { padding: 10px 14px; border-radius: 8px; font-size: .92rem; }
+.alert.error { background: #fbe4e4; color: #8f2424; border: 1px solid #efc4c4; }
+.alert.ok { background: #e1f5ec; color: #11704b; border: 1px solid #b9e6d2; }
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+.filters label { min-width: 150px; }
+.slots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.slot { font-size: .8rem; padding: 3px 9px; border-radius: 6px; }
+.slot.free { background: #e1f5ec; color: #11704b; }
+.slot.busy { background: #fbe4e4; color: #8f2424; }
+.muted { color: var(--muted); }
+.pager { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+.empty { padding: 30px; text-align: center; color: var(--muted); }
