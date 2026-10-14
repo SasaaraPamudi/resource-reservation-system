@@ -1,67 +1,101 @@
 import Link from "next/link";
-import { formatRange } from "@/lib/format";
-import { dashboardService, reservationService } from "@/server/container";
+import DayTimeline from "@/components/DayTimeline";
+import { categoryTone, formatLongDate, formatRange, startOfDay } from "@/lib/format";
+import { dashboardService, reservationService, resourceService } from "@/server/container";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [{ summary, usage }, upcoming] = await Promise.all([
+  const dayStart = startOfDay();
+  const dayEnd = new Date(dayStart.getTime() + 24 * 3600_000);
+
+  const [{ summary, usage }, next, today, resources] = await Promise.all([
     dashboardService.getOverview(),
-    reservationService.list({ scope: "upcoming", status: "confirmed", pageSize: 5 }),
+    reservationService.list({ scope: "upcoming", status: "confirmed", pageSize: 6 }),
+    reservationService.list({ status: "confirmed", from: dayStart, to: dayEnd, pageSize: 100 }),
+    resourceService.list(),
   ]);
+
+  const toneOf = new Map(resources.map((r) => [r.id, categoryTone(r.categoryId)]));
+  const maxHours = Math.max(...usage.map((u) => u.hoursLast30Days), 1);
+  const now = Date.now();
 
   return (
     <>
-      <h1>Dashboard</h1>
-      <p className="sub">Current usage and availability across all shared resources.</p>
-
-      <div className="grid">
-        <div className="card stat"><div className="n">{summary.activeResources}</div><div className="l">Active resources</div></div>
-        <div className="card stat"><div className="n">{summary.inProgressNow}</div><div className="l">In use right now</div></div>
-        <div className="card stat"><div className="n">{summary.upcomingReservations}</div><div className="l">Upcoming reservations</div></div>
+      <div className="page-head">
+        <div>
+          <h1>Today</h1>
+          <p className="sub">{formatLongDate()}</p>
+        </div>
+        <div className="summary">
+          <div><strong>{summary.inProgressNow}</strong><span>in use now</span></div>
+          <div><strong>{summary.upcomingReservations}</strong><span>coming up</span></div>
+          <div><strong>{summary.activeResources}</strong><span>resources</span></div>
+        </div>
       </div>
 
-      <h2>Next reservations</h2>
-      {upcoming.items.length === 0 ? (
-        <div className="card empty">No upcoming reservations. <Link href="/reservations/new">Create one</Link></div>
-      ) : (
-        <div className="table-wrap">
-          <table>
-            <thead><tr><th>Resource</th><th>When</th><th>Title</th><th>Reserved by</th></tr></thead>
-            <tbody>
-              {upcoming.items.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.resourceName}</td>
-                  <td>{formatRange(r.startTime, r.endTime)}</td>
-                  <td>{r.title}</td>
-                  <td>{r.userName}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="card panel">
+        <div className="panel-head">
+          <h2>Schedule</h2>
+          <span className="muted">
+            {today.total === 0 ? "Nothing booked today. Every resource is free." : `${today.total} booking${today.total === 1 ? "" : "s"} today`}
+          </span>
         </div>
-      )}
+        {resources.length === 0 ? (
+          <div className="empty">No resources yet. <Link href="/resources/new">Add your first resource</Link></div>
+        ) : (
+          <DayTimeline resources={resources} reservations={today.items} dayStart={dayStart} />
+        )}
+      </section>
 
-      <h2>Resource usage</h2>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Resource</th><th>Category</th><th>Status now</th><th>Hours booked (last 30 days)</th><th>Upcoming bookings</th></tr></thead>
-          <tbody>
+      <div className="split">
+        <section className="card panel">
+          <div className="panel-head">
+            <h2>Up next</h2>
+            <Link href="/reservations">View all</Link>
+          </div>
+          {next.items.length === 0 ? (
+            <div className="empty">No upcoming reservations. <Link href="/reservations/new">Book a resource</Link></div>
+          ) : (
+            <ul className="feed">
+              {next.items.map((r) => {
+                const live = new Date(r.startTime).getTime() <= now;
+                return (
+                  <li key={r.id} className={`tone-${toneOf.get(r.resourceId) ?? 0}`}>
+                    <i className="dot" />
+                    <div>
+                      <strong>{r.title}</strong>
+                      <span className="muted">{r.resourceName}, {r.userName}</span>
+                      <span className="muted">{formatRange(r.startTime, r.endTime)}</span>
+                    </div>
+                    {live && <span className="badge amber">In progress</span>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <section className="card panel">
+          <div className="panel-head">
+            <h2>Usage</h2>
+            <span className="muted">Hours booked, last 30 days</span>
+          </div>
+          <ul className="usage">
             {usage.map((u) => (
-              <tr key={u.resourceId}>
-                <td>{u.name}</td>
-                <td>{u.categoryName}</td>
-                <td>
-                  {!u.isActive ? <span className="badge gray">Inactive</span>
-                    : u.inUseNow ? <span className="badge amber">In use</span>
-                    : <span className="badge green">Available</span>}
-                </td>
-                <td>{u.hoursLast30Days.toFixed(1)} h</td>
-                <td>{u.upcomingCount}</td>
-              </tr>
+              <li key={u.resourceId} className={u.isActive ? "" : "off"}>
+                <div className="usage-top">
+                  <strong>{u.name}</strong>
+                  <span>{u.hoursLast30Days.toFixed(1)} h</span>
+                </div>
+                <div className="meter"><i style={{ width: `${(u.hoursLast30Days / maxHours) * 100}%` }} /></div>
+                <span className="muted">
+                  {!u.isActive ? "Inactive" : u.inUseNow ? "In use now" : "Free now"}, {u.upcomingCount} upcoming
+                </span>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </section>
       </div>
     </>
   );

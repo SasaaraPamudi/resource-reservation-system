@@ -14,6 +14,8 @@ export interface ListReservationsQuery {
   resourceId?: number;
   status?: ReservationStatus;
   scope?: ReservationScope;
+  from?: Date;
+  to?: Date;
   page?: number;
   pageSize?: number;
 }

@@ -7,8 +7,14 @@ import type { Availability, Resource } from "@/types";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toDateInput = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const timeLabel = (iso: string) =>
-  new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+const timeLabel = (iso: string) => {
+  const d = new Date(iso);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const WIN_START = 7;
+const WIN_END = 21;
+const WIN_HOURS = WIN_END - WIN_START;
 
 interface Props {
   resources: Resource[];
@@ -134,24 +140,77 @@ export default function ReservationForm({ resources, initialResourceId }: Props)
         </label>
       </div>
 
-      {resourceId && availability && (
-        <div className="card">
-          <strong>Bookings on this day</strong>
-          <div className="slots">
-            {availability.reservations.length === 0 && <span className="muted">Nothing booked yet.</span>}
-            {availability.reservations.map((r) => (
-              <span key={r.id} className="slot busy">{timeLabel(r.startTime)}–{timeLabel(r.endTime)} {r.title}</span>
-            ))}
+      {resourceId && availability && (() => {
+        const dayStart = new Date(`${date}T00:00`).getTime();
+        const pct = (t: number) =>
+          Math.min(Math.max(((t - dayStart) / 3600000 - WIN_START) / WIN_HOURS, 0), 1) * 100;
+        const selStart = new Date(`${date}T${startTime}`).getTime();
+        const selEnd = new Date(`${date}T${endTime}`).getTime();
+        const hasSel = !Number.isNaN(selStart) && !Number.isNaN(selEnd) && selEnd > selStart;
+        const clashes = hasSel
+          ? availability.reservations.filter(
+              (r) => selStart < new Date(r.endTime).getTime() && selEnd > new Date(r.startTime).getTime(),
+            )
+          : [];
+        const QUARTER = 15 * 60000;
+        const winStartMs = dayStart + WIN_START * 3600000;
+        const winEndMs = dayStart + WIN_END * 3600000;
+        const slots = availability.freeSlots
+          .map((sl) => ({
+            start: Math.ceil(Math.max(new Date(sl.start).getTime(), winStartMs) / QUARTER) * QUARTER,
+            end: Math.min(new Date(sl.end).getTime(), winEndMs),
+          }))
+          .filter((sl) => sl.end - sl.start >= QUARTER);
+        const pickSlot = (sl: { start: number; end: number }) => {
+          const end = Math.min(sl.end, sl.start + 3600000);
+          setStartTime(timeLabel(new Date(sl.start).toISOString()));
+          setEndTime(timeLabel(new Date(end).toISOString()));
+        };
+        return (
+          <div className="card daystrip">
+            <div className="ds-head">
+              <strong>Availability on this day</strong>
+              <span className="muted">Showing 07:00 to 21:00</span>
+            </div>
+            <div className="ds-track">
+              {availability.reservations.map((r) => (
+                <div
+                  key={r.id}
+                  className="ds-busy"
+                  style={{ left: `${pct(new Date(r.startTime).getTime())}%`, width: `${pct(new Date(r.endTime).getTime()) - pct(new Date(r.startTime).getTime())}%` }}
+                  title={`${r.title}, ${timeLabel(r.startTime)}–${timeLabel(r.endTime)}`}
+                />
+              ))}
+              {hasSel && (
+                <div
+                  className={`ds-pick${clashes.length ? " bad" : ""}`}
+                  style={{ left: `${pct(selStart)}%`, width: `${pct(selEnd) - pct(selStart)}%` }}
+                />
+              )}
+            </div>
+            <div className="ds-scale">
+              {[7, 10, 13, 16, 19, 21].map((h) => <span key={h}>{String(h).padStart(2, "0")}</span>)}
+            </div>
+            {clashes.length > 0 ? (
+              <p className="ds-note bad">Overlaps {clashes.map((c) => `${c.title} (${timeLabel(c.startTime)}–${timeLabel(c.endTime)})`).join(", ")}. Pick a free time.</p>
+            ) : (
+              <p className="ds-note">
+                {availability.reservations.length === 0
+                  ? "Nothing booked yet. The whole day is free."
+                  : `Booked: ${availability.reservations.map((r) => `${timeLabel(r.startTime)}–${timeLabel(r.endTime)}`).join(", ")}`}
+              </p>
+            )}
+            <div className="slots">
+              {slots.length === 0 && <span className="muted">No free time left in this window.</span>}
+              {slots.map((sl, i) => (
+                <button type="button" key={i} className="slot free" onClick={() => pickSlot(sl)} title="Use the start of this free slot">
+                  {timeLabel(new Date(sl.start).toISOString())}–{timeLabel(new Date(sl.end).toISOString())}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ marginTop: 10 }}><strong>Free slots</strong></div>
-          <div className="slots">
-            {availability.freeSlots.length === 0 && <span className="muted">No free time left.</span>}
-            {availability.freeSlots.map((s, i) => (
-              <span key={i} className="slot free">{timeLabel(s.start)}–{timeLabel(s.end)}</span>
-            ))}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       <label>Title
         <input required maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sprint planning" />
