@@ -13,7 +13,7 @@ export default async function NewReservationPage({
   return (
     <>
       <h1>New reservation</h1>
-      <p className="sub">Pick a resource and time. Existing bookings are shown so you can avoid clashes.</p>
+      <p className="sub">Choose what you need and when. We'll show what's already booked, so you can find a free slot fast.</p>
       <ReservationForm resources={resources} initialResourceId={Number(resourceId) || undefined} />
     </>
   );

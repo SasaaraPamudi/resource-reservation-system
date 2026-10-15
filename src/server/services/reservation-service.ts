@@ -45,13 +45,10 @@ export class ReservationService {
     if (!resource) throw new NotFoundError("Resource not found");
     if (!resource.isActive) throw new ConflictError("This resource is not available for booking");
 
-    // 1) Friendly pre-check that explains exactly what clashes.
     await this.assertNoConflict(data.resourceId, data.startTime, data.endTime);
 
     const userId = await this.users.upsertByEmail(data.userName, data.userEmail, data.userTeam ?? null);
 
-    // 2) The DB exclusion constraint is the real guarantee: if two requests race
-    //    past the pre-check, exactly one INSERT wins and the other is rejected here.
     try {
       const id = await this.reservations.create({
         resourceId: data.resourceId,
@@ -81,7 +78,6 @@ export class ReservationService {
     return this.get(id);
   }
 
-  /** Bookings and free slots for a resource inside [from, to). Free slots never start in the past. */
   async getAvailability(resourceId: number, fromRaw: unknown, toRaw: unknown): Promise<Availability> {
     const from = this.parseDate(fromRaw, "from");
     const to = this.parseDate(toRaw, "to");

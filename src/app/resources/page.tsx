@@ -13,7 +13,7 @@ export default async function ResourcesPage() {
       <div className="page-head">
         <div>
           <h1>Resources</h1>
-          <p className="sub">Rooms, equipment and vehicles your team can reserve.</p>
+          <p className="sub">Everything your team shares, from meeting rooms to the company van. Pick one to book it.</p>
         </div>
         <Link href="/resources/new" className="btn primary">Add resource</Link>
       </div>

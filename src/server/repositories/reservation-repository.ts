@@ -51,8 +51,8 @@ export interface ReservationFilters {
   resourceId?: number;
   status?: ReservationStatus;
   scope?: ReservationScope;
-  from?: Date; // overlap window start
-  to?: Date; // overlap window end
+  from?: Date; 
+  to?: Date; 
   page?: number;
   pageSize?: number;
 }
@@ -107,7 +107,6 @@ export class ReservationRepository {
     return rows[0] ? mapRow(rows[0]) : null;
   }
 
-  /** Confirmed reservations of a resource overlapping [start, end). */
   async findConflicts(resourceId: number, start: Date, end: Date): Promise<Reservation[]> {
     const { rows } = await this.db.query<ReservationRow>(
       `${SELECT}

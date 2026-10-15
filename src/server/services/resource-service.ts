@@ -37,7 +37,6 @@ export class ResourceService {
     await this.get(id);
     if (patch.categoryId !== undefined) await this.assertCategoryExists(patch.categoryId);
 
-    // Deactivating a resource that still has bookings would silently strand them.
     if (patch.isActive === false) {
       const upcoming = await this.reservations.countUpcomingForResource(id);
       if (upcoming > 0) {

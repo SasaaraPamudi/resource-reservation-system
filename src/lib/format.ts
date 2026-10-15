@@ -28,7 +28,6 @@ export function formatRange(startIso: string, endIso: string): string {
   return `${formatDateTime(startIso)} – ${formatDateTime(endIso)}`;
 }
 
-/** Offset (ms) between the app timezone and UTC at the given instant. */
 function tzOffsetMs(d: Date): number {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,
@@ -45,7 +44,7 @@ function tzOffsetMs(d: Date): number {
   return asUtc - Math.floor(d.getTime() / 1000) * 1000;
 }
 
-/** Midnight (start of day) in the app timezone, as a real instant. */
+
 export function startOfDay(d: Date = new Date()): Date {
   const offset = tzOffsetMs(d);
   const local = new Date(d.getTime() + offset);
@@ -53,7 +52,6 @@ export function startOfDay(d: Date = new Date()): Date {
   return new Date(midnightAsUtc - offset);
 }
 
-/** Maps a category to one of five colour tones used across the UI. */
 export function categoryTone(categoryId: number): number {
   return categoryId % 5;
 }

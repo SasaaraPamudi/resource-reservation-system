@@ -38,7 +38,6 @@ export default function ReservationForm({ resources, initialResourceId }: Props)
   const [busy, setBusy] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Remember who is booking (convenience only, never trusted by the server).
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("reserver") ?? "null");
@@ -48,11 +47,10 @@ export default function ReservationForm({ resources, initialResourceId }: Props)
         setUserTeam(saved.userTeam ?? "");
       }
     } catch {
-      /* ignore */
+
     }
   }, []);
 
-  // Show the chosen day's bookings and free slots.
   useEffect(() => {
     if (!resourceId || !date) {
       setAvailability(null);
@@ -107,7 +105,6 @@ export default function ReservationForm({ resources, initialResourceId }: Props)
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      // Refresh the slot list so the user sees what was taken.
       setRefreshKey((k) => k + 1);
       setBusy(false);
     }
