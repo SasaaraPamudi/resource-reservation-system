@@ -6,12 +6,14 @@ double-booking, and see how they are being used.
 
 **Stack:** Next.js 15 (App Router) · TypeScript · PostgreSQL (`pg`, no ORM) · Zod · plain CSS
 
+**ER diagram:** [View on Mermaid Live](https://mermaid.live/edit#pako:eNqVVF1v2jAU_SuWn6FSSFqSvFUsm6ppY4LShylS5NkXsEjs6NqpoMB_nwMLpNCsrV8sn3O_dM-93lKuBdCYAn6RbIGsSDFVxJ1JMh3PJqMkG90_Jt_Gk4dkSna7fl9vT9SUxCSlPGfGyLkEk9JL57ZLMnm6f3wY_zx6SUP-aL0CQaQ6-82cVbdPwVZNkv9VuW3I-khliRTk1_c2-MyQLxkSxQogsxO1vy7__Vg1yJmFhcZN5tivH8lUHwtrSwQYjrK0Uqu33HLtQl9wx4Ql49Ju2rhrZw5MEWkyxq18hlfJZAHGsqK0L4QjuHpFxmyXRVWKC4v9a4U-1-K3cCiYzC860nAWzmP4fvFt1c7z8jHhEIyukMO1cDVbGcBuSa20OVwJqrR1M9pRvLvRZjXSZQFKXPFNQmdjK1NvnFZziYXbnZ2bBMUhz0Gcl-jzep-CtNtKe3SBUtDYYgU9WgA6ydyTbmuDlNoluDppvZgIolr3BcNVn-tco6tF1f4lU7-1LpoQqKvFksZzlhv3Og7Zv1_nhKLrAOBIV8rSOAoPMWi8pWsa-154E3mDuyAKfT_yw6BHNzR2YBB4_mAYBLe3XhgM9j36ckjq3Xh-MAjDKAzuhtFw6OxBSKvxx_HLO_x8-7-1TYwt)
+
 ## Features
 
 - **Resources** – create, edit, categorize, activate/deactivate (location, capacity, description)
 - **Reservations** – book a time slot, view/filter (resource, upcoming/past, status), cancel, paginated
-- **Availability** – pick a resource and date and see booked and free slots before submitting
-- **Dashboard** – active resources, what is in use right now, upcoming bookings, hours booked per resource (30 days)
+- **Availability** – pick a resource and date and see booked and free slots on a live day bar before submitting; overlaps are flagged as you choose the time
+- **Dashboard** – today's schedule for every resource, what is in use right now, upcoming bookings, hours booked per resource (30 days)
 - **Conflict prevention** – overlapping reservations of the same resource are impossible (see below)
 
 ## Setup
@@ -34,7 +36,7 @@ Other scripts: `npm run db:migrate` (schema only), `npm run db:seed` (demo data 
 ```
 src/
   app/            Next.js App Router: pages (server components) + /api route handlers
-  components/     Client components (forms, buttons)
+  components/     Client components (forms, buttons) and the dashboard day timeline
   server/
     repositories/ SQL only (ResourceRepository, ReservationRepository, ...)
     services/     Business rules (ResourceService, ReservationService, DashboardService)
@@ -85,7 +87,9 @@ curl -X POST localhost:3000/api/reservations -H 'Content-Type: application/json'
 
 ## Database design
 
-See [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md) (Mermaid source – paste into mermaid.live for a shareable link).
+**ER diagram:** [View on Mermaid Live](https://mermaid.live/edit#pako:eNqVVF1v2jAU_SuWn6FSSFqSvFUsm6ppY4LShylS5NkXsEjs6NqpoMB_nwMLpNCsrV8sn3O_dM-93lKuBdCYAn6RbIGsSDFVxJ1JMh3PJqMkG90_Jt_Gk4dkSna7fl9vT9SUxCSlPGfGyLkEk9JL57ZLMnm6f3wY_zx6SUP-aL0CQaQ6-82cVbdPwVZNkv9VuW3I-khliRTk1_c2-MyQLxkSxQogsxO1vy7__Vg1yJmFhcZN5tivH8lUHwtrSwQYjrK0Uqu33HLtQl9wx4Ql49Ju2rhrZw5MEWkyxq18hlfJZAHGsqK0L4QjuHpFxmyXRVWKC4v9a4U-1-K3cCiYzC860nAWzmP4fvFt1c7z8jHhEIyukMO1cDVbGcBuSa20OVwJqrR1M9pRvLvRZjXSZQFKXPFNQmdjK1NvnFZziYXbnZ2bBMUhz0Gcl-jzep-CtNtKe3SBUtDYYgU9WgA6ydyTbmuDlNoluDppvZgIolr3BcNVn-tco6tF1f4lU7-1LpoQqKvFksZzlhv3Og7Zv1_nhKLrAOBIV8rSOAoPMWi8pWsa-154E3mDuyAKfT_yw6BHNzR2YBB4_mAYBLe3XhgM9j36ckjq3Xh-MAjDKAzuhtFw6OxBSKvxx_HLO_x8-7-1TYwt)
+
+The Mermaid source and notes on the key constraints are in [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md).
 
 Entities: `resource_categories` 1–N `resources` 1–N `reservations` N–1 `users`.
 
